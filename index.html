@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Round Trip • Entradas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Compra entradas para eventos y conciertos con Round Trip. Cupón RT2025 -10%. Paga por WhatsApp.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+  </style>
+</head>
+<body class="bg-neutral-950 text-neutral-50">
+
+  <!-- NAV -->
+  <header class="sticky top-0 z-50 backdrop-blur bg-neutral-950/70 border-b border-neutral-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <!-- Reemplaza el src con tu logo -->
+        <img src="REEMPLAZA_CON_RUTA_DE_TU_LOGO" alt="Round Trip" class="h-9 w-auto hidden sm:block">
+        <span class="text-xl font-extrabold tracking-tight sm:hidden">ROUND TRIP</span>
+      </a>
+      <nav class="flex items-center gap-3">
+        <a href="#eventos" class="px-3 py-2 rounded-lg hover:bg-neutral-800/60">Eventos</a>
+        <button id="btnOpenCart" class="px-4 py-2 rounded-xl bg-white text-neutral-900 font-semibold hover:bg-neutral-200 transition">Ver carrito</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-neutral-900/20 to-neutral-950"></div>
+    <img src="https://images.unsplash.com/photo-1518972559570-7cc1309f3229?q=80&w=1600&auto=format&fit=crop" alt="" class="w-full h-[42vh] object-cover opacity-60">
+    <div class="absolute inset-0 max-w-7xl mx-auto px-4 flex flex-col justify-center">
+      <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight max-w-3xl">Entradas para eventos y conciertos</h1>
+      <p class="text-neutral-300 mt-3 max-w-2xl">Compra fácil. Aplica tu cupón <span class="font-semibold text-white">RT2025</span> y obtén <span class="font-semibold text-white">10% de descuento</span>. ¿Dudas? Escríbenos por WhatsApp.</p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <a href="#eventos" class="px-5 py-3 rounded-xl bg-white text-neutral-900 font-semibold hover:bg-neutral-200">Ver eventos</a>
+        <a target="_blank" rel="noopener" href="https://wa.me/51954118198?text=Hola%20Round%20Trip%2C%20tengo%20una%20consulta%20sobre%20entradas." class="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 font-semibold">WhatsApp +51 954 118 198</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- LISTA DE EVENTOS -->
+  <main id="eventos" class="max-w-7xl mx-auto px-4 py-10">
+    <div class="flex items-end justify-between gap-4 mb-6">
+      <div>
+        <h2 class="text-2xl sm:text-3xl font-bold">Próximos eventos</h2>
+        <p class="text-neutral-400">Añade entradas al carrito y paga por WhatsApp.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <input id="search" type="search" placeholder="Buscar evento..." class="px-3 py-2 rounded-lg bg-neutral-900 border border-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-600">
+      </div>
+    </div>
+
+    <div id="gridEventos" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-neutral-800">
+    <div class="max-w-7xl mx-auto px-4 py-8 text-sm text-neutral-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p>© <span id="year"></span> Round Trip. Precios en PEN (S/). Cupón <b>RT2025</b> válido una vez por compra.</p>
+      <a class="underline hover:text-neutral-200" target="_blank" rel="noopener" href="https://wa.me/51954118198">Soporte por WhatsApp</a>
+    </div>
+  </footer>
+
+  <!-- CARRITO SLIDEOVER -->
+  <div id="cartPanel" class="fixed inset-0 z-[60] hidden">
+    <div id="cartBackdrop" class="absolute inset-0 bg-black/60"></div>
+    <aside class="absolute right-0 top-0 h-full w-full sm:w-[420px] bg-neutral-950 border-l border-neutral-800 flex flex-col">
+      <div class="p-4 border-b border-neutral-800 flex items-center justify-between">
+        <h3 class="text-xl font-bold">Tu carrito</h3>
+        <button id="btnCloseCart" class="p-2 rounded-lg hover:bg-neutral-800" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="p-4 grow overflow-auto">
+        <ul id="cartItems" class="space-y-3"></ul>
+
+        <div class="mt-6 p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+          <label class="text-sm text-neutral-300">Cupón de descuento</label>
+          <div class="mt-2 flex gap-2">
+            <input id="couponInput" type="text" placeholder="RT2025" class="flex-1 px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:outline-none">
+            <button id="btnApplyCoupon" class="px-3 py-2 rounded-lg bg-white text-neutral-900 font-semibold hover:bg-neutral-200">Aplicar</button>
+          </div>
+          <p id="couponMsg" class="text-sm mt-2"></p>
+        </div>
+
+        <dl class="mt-6 space-y-2 text-sm">
+          <div class="flex justify-between"><dt class="text-neutral-400">Subtotal</dt><dd id="dlSubtotal" class="font-semibold">S/ 0.00</dd></div>
+          <div class="flex justify-between"><dt class="text-neutral-400">Descuento</dt><dd id="dlDiscount" class="font-semibold">- S/ 0.00</dd></div>
+          <div class="flex justify-between text-lg"><dt class="font-bold">Total</dt><dd id="dlTotal" class="font-extrabold">S/ 0.00</dd></div>
+        </dl>
+      </div>
+      <div class="p-4 border-t border-neutral-800 flex gap-3">
+        <button id="btnClear" class="flex-1 px-4 py-3 rounded-xl border border-neutral-700 hover:bg-neutral-900">Vaciar</button>
+        <button id="btnPay" class="flex-1 px-4 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 font-semibold">Pagar por WhatsApp</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- BARRA FIJA MÓVIL -->
+  <div class="fixed bottom-3 inset-x-3 sm:hidden z-40">
+    <div class="bg-neutral-900/90 border border-neutral-800 rounded-2xl shadow-lg px-3 py-2 flex items-center justify-between">
+      <span id="miniTotal" class="text-sm">Total: S/ 0.00</span>
+      <button id="miniOpenCart" class="px-3 py-2 rounded-xl bg-white text-neutral-900 text-sm font-semibold">Carrito</button>
+    </div>
+  </div>
+
+  <script>
+    // === Datos de ejemplo (edítalos libremente) ===
+    const EVENTS = [
+      {
+        id: "ev1",
+        title: "HALLOWEEN BESTIAL – Barra Libre",
+        date: "Vie 31 Oct • 9:00 pm",
+        venue: "El Templo, Miraflores",
+        image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200&auto=format&fit=crop",
+        tickets: [
+          { type: "General", price: 59 },
+          { type: "VIP", price: 119 }
+        ]
+      },
+      {
+        id: "ev2",
+        title: "FRACTAL – El Patrón Infinito",
+        date: "Sáb 15 Nov • 10:00 pm",
+        venue: "Centro de Convenciones Barranco",
+        image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1200&auto=format&fit=crop",
+        tickets: [
+          { type: "General", price: 70 },
+          { type: "VIP", price: 150 }
+        ]
+      },
+      {
+        id: "ev3",
+        title: "PULSE – Techno Night",
+        date: "Vie 28 Nov • 10:00 pm",
+        venue: "La Noche, Miraflores",
+        image: "https://images.unsplash.com/photo-1558980664-10eaaff7a6af?q=80&w=1200&auto=format&fit=crop",
+        tickets: [
+          { type: "General", price: 50 },
+          { type: "Box", price: 400 }
+        ]
+      }
+    ];
+
+    // === Estado ===
+    const LS_KEY = "rt_cart_v1";
+    const LS_COUPON = "rt_coupon_v1";
+    let cart = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+    let couponApplied = JSON.parse(localStorage.getItem(LS_COUPON) || "false");
+
+    const PEN = n => "S/ " + n.toFixed(2);
+
+    // === Render de eventos ===
+    const grid = document.getElementById("gridEventos");
+    function renderEvents(list) {
+      grid.innerHTML = list.map(ev => `
+        <article class="rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-900/40 flex flex-col">
+          <img src="${ev.image}" alt="${ev.title}" class="h-44 w-full object-cover">
+          <div class="p-4 flex flex-col gap-3">
+            <header>
+              <h3 class="text-lg font-bold leading-snug">${ev.title}</h3>
+              <p class="text-neutral-400 text-sm">${ev.date} · ${ev.venue}</p>
+            </header>
+
+            <div class="flex items-center gap-2">
+              <label class="text-sm text-neutral-300">Entrada</label>
+              <select class="flex-1 px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800" id="sel-${ev.id}">
+                ${ev.tickets.map(t => `<option value="${t.type}|${t.price}">${t.type} — ${PEN(t.price)}</option>`).join("")}
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <label class="text-sm text-neutral-300">Cantidad</label>
+              <input type="number" min="1" value="1" class="w-24 px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800" id="qty-${ev.id}">
+            </div>
+
+            <button data-evid="${ev.id}" class="btnAdd px-4 py-3 rounded-xl bg-white text-neutral-900 font-semibold hover:bg-neutral-200 mt-auto">Añadir al carrito</button>
+          </div>
+        </article>
+      `).join("");
+      // Listeners para botones
+      grid.querySelectorAll(".btnAdd").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.evid;
+          const sel = document.getElementById(`sel-${id}`).value; // "tipo|precio"
+          const [type, priceStr] = sel.split("|");
+          const qty = Math.max(1, parseInt(document.getElementById(`qty-${id}`).value || "1", 10));
+          addToCart(id, type, parseFloat(priceStr), qty);
+        });
+      });
+    }
+
+    // === Lógica de carrito ===
+    function addToCart(eventId, type, unitPrice, qty) {
+      const ev = EVENTS.find(e => e.id === eventId);
+      if (!ev) return;
+      const key = `${eventId}__${type}`;
+      const found = cart.find(i => i.key === key);
+      if (found) {
+        found.qty += qty;
+      } else {
+        cart.push({ key, eventId, title: ev.title, type, unitPrice, qty });
+      }
+      persist();
+      updateCartUI();
+      openCart();
+    }
+
+    function removeItem(key) {
+      cart = cart.filter(i => i.key !== key);
+      persist();
+      updateCartUI();
+    }
+
+    function changeQty(key, delta) {
+      const it = cart.find(i => i.key === key);
+      if (!it) return;
+      it.qty = Math.max(1, it.qty + delta);
+      persist();
+      updateCartUI();
+    }
+
+    function clearCart() {
+      cart = [];
+      couponApplied = false;
+      persist();
+      updateCartUI();
+    }
+
+    function persist() {
+      localStorage.setItem(LS_KEY, JSON.stringify(cart));
+      localStorage.setItem(LS_COUPON, JSON.stringify(couponApplied));
+    }
+
+    function totals() {
+      const subtotal = cart.reduce((s, i) => s + i.unitPrice * i.qty, 0);
+      const discount = couponApplied ? subtotal * 0.10 : 0;
+      const total = Math.max(0, subtotal - discount);
+      return { subtotal, discount, total };
+    }
+
+    // === UI de carrito ===
+    const cartPanel = document.getElementById("cartPanel");
+    const cartItems = document.getElementById("cartItems");
+    const dlSubtotal = document.getElementById("dlSubtotal");
+    const dlDiscount = document.getElementById("dlDiscount");
+    const dlTotal = document.getElementById("dlTotal");
+    const miniTotal = document.getElementById("miniTotal");
+    const couponInput = document.getElementById("couponInput");
+    const couponMsg = document.getElementById("couponMsg");
+
+    function updateCartUI() {
+      if (cart.length === 0) {
+        cartItems.innerHTML = `<li class="text-neutral-400">Tu carrito está vacío.</li>`;
+      } else {
+        cartItems.innerHTML = cart.map(i => `
+          <li class="p-3 border border-neutral-800 rounded-xl">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="font-semibold">${i.title}</p>
+                <p class="text-sm text-neutral-400">${i.type} · ${PEN(i.unitPrice)}</p>
+              </div>
+              <div class="flex items-center gap-1">
+                <button class="px-2 py-1 rounded-lg border border-neutral-700 hover:bg-neutral-900" onclick="changeQty('${i.key}', -1)">−</button>
+                <span class="px-2">${i.qty}</span>
+                <button class="px-2 py-1 rounded-lg border border-neutral-700 hover:bg-neutral-900" onclick="changeQty('${i.key}', 1)">＋</button>
+                <button class="ml-2 px-2 py-1 rounded-lg hover:bg-neutral-900" onclick="removeItem('${i.key}')" title="Eliminar">✕</button>
+              </div>
+            </div>
+            <div class="text-right mt-1 text-sm text-neutral-300">Subtotal: <b>${PEN(i.unitPrice * i.qty)}</b></div>
+          </li>
+        `).join("");
+      }
+      const t = totals();
+      dlSubtotal.textContent = PEN(t.subtotal);
+      dlDiscount.textContent = "- " + PEN(t.discount);
+      dlTotal.textContent = PEN(t.total);
+      miniTotal.textContent = "Total: " + PEN(t.total);
+      couponInput.value = couponApplied ? "RT2025" : "";
+      couponMsg.className = "text-sm mt-2 " + (couponApplied ? "text-emerald-400" : "text-neutral-400");
+      couponMsg.textContent = couponApplied ? "Cupón RT2025 aplicado (-10%)." : "Ingresa tu cupón si tienes uno.";
+    }
+
+    // === Cupón ===
+    function applyCoupon() {
+      const code = (couponInput.value || "").trim().toUpperCase();
+      if (code === "RT2025") {
+        couponApplied = true;
+        persist();
+        updateCartUI();
+      } else {
+        couponApplied = false;
+        persist();
+        updateCartUI();
+        couponMsg.classList.remove("text-emerald-400");
+        couponMsg.classList.add("text-red-400");
+        couponMsg.textContent = "Cupón no válido.";
+      }
+    }
+
+    // === WhatsApp Pay ===
+    function payByWhatsApp() {
+      if (cart.length === 0) {
+        alert("Tu carrito está vacío.");
+        return;
+      }
+      const { subtotal, discount, total } = totals();
+      const lines = [];
+      lines.push("Hola Round Trip 👋 Quiero comprar entradas:");
+      lines.push("");
+      cart.forEach(i => {
+        lines.push(`• ${i.title} — ${i.type} x ${i.qty} => ${PEN(i.unitPrice * i.qty)}`);
+      });
+      lines.push("");
+      lines.push(`Subtotal: ${PEN(subtotal)}`);
+      if (couponApplied) lines.push(`Descuento RT2025 (10%): -${PEN(discount)}`);
+      lines.push(`Total a pagar: ${PEN(total)}`);
+      lines.push("");
+      lines.push("Nombre:");
+      lines.push("Correo:");
+      lines.push("");
+      lines.push("¿Cómo puedo realizar el pago?");
+
+      const msg = encodeURIComponent(lines.join("\n"));
+      const phone = "51954118198"; // sin '+'
+      window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+    }
+
+    // === SlideOver helpers ===
+    const btnOpenCart = document.getElementById("btnOpenCart");
+    const miniOpenCart = document.getElementById("miniOpenCart");
+    const btnCloseCart = document.getElementById("btnCloseCart");
+    const backdrop = document.getElementById("cartBackdrop");
+
+    function openCart() { cartPanel.classList.remove("hidden"); }
+    function closeCart() { cartPanel.classList.add("hidden"); }
+
+    // === Listeners base ===
+    document.getElementById("btnApplyCoupon").addEventListener("click", applyCoupon);
+    document.getElementById("btnPay").addEventListener("click", payByWhatsApp);
+    document.getElementById("btnClear").addEventListener("click", clearCart);
+    btnOpenCart.addEventListener("click", openCart);
+    miniOpenCart.addEventListener("click", openCart);
+    btnCloseCart.addEventListener("click", closeCart);
+    backdrop.addEventListener("click", closeCart);
+
+    // Buscar
+    document.getElementById("search").addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = EVENTS.filter(ev =>
+        ev.title.toLowerCase().includes(q) ||
+        ev.venue.toLowerCase().includes(q)
+      );
+      renderEvents(filtered);
+    });
+
+    // Init
+    document.getElementById("year").textContent = new Date().getFullYear();
+    renderEvents(EVENTS);
+    updateCartUI();
+  </script>
+</body>
+</html>
