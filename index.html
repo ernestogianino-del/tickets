@@ -11,6 +11,7 @@
   <style>
     html { scroll-behavior: smooth; }
     body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .error-ring{ outline: none; box-shadow: 0 0 0 2px rgba(239,68,68,.6); border-color:#ef4444!important;}
   </style>
 </head>
 <body class="bg-neutral-950 text-neutral-50">
@@ -87,6 +88,18 @@
           <p id="couponMsg" class="text-sm mt-2"></p>
         </div>
 
+        <!-- TUS DATOS (NUEVO) -->
+        <div class="mt-6 p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+          <p class="text-sm text-neutral-300 font-semibold">Tus datos</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            <input id="custName" type="text" autocomplete="name" placeholder="Nombre completo *" class="px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:outline-none">
+            <input id="custPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Número WhatsApp *" class="px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:outline-none">
+            <input id="custEmail" type="email" autocomplete="email" placeholder="Correo *" class="px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:outline-none sm:col-span-2">
+            <input id="custDob" type="date" placeholder="Fecha de nacimiento *" class="px-3 py-2 rounded-lg bg-neutral-950 border border-neutral-800 focus:outline-none sm:col-span-2">
+          </div>
+          <p id="custMsg" class="text-xs mt-2 text-neutral-400">Usaremos estos datos para tu compra y validación de entradas.</p>
+        </div>
+
         <dl class="mt-6 space-y-2 text-sm">
           <div class="flex justify-between"><dt class="text-neutral-400">Subtotal</dt><dd id="dlSubtotal" class="font-semibold">S/ 0.00</dd></div>
           <div class="flex justify-between"><dt class="text-neutral-400">Descuento</dt><dd id="dlDiscount" class="font-semibold">- S/ 0.00</dd></div>
@@ -149,8 +162,10 @@
     // === Estado ===
     const LS_KEY = "rt_cart_v1";
     const LS_COUPON = "rt_coupon_v1";
+    const LS_CUSTOMER = "rt_customer_v1";
     let cart = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
     let couponApplied = JSON.parse(localStorage.getItem(LS_COUPON) || "false");
+    let customer = JSON.parse(localStorage.getItem(LS_CUSTOMER) || '{"name":"","phone":"","email":"","dob":""}');
 
     const PEN = n => "S/ " + n.toFixed(2);
 
@@ -234,6 +249,7 @@
     function persist() {
       localStorage.setItem(LS_KEY, JSON.stringify(cart));
       localStorage.setItem(LS_COUPON, JSON.stringify(couponApplied));
+      localStorage.setItem(LS_CUSTOMER, JSON.stringify(customer));
     }
 
     function totals() {
@@ -252,6 +268,67 @@
     const miniTotal = document.getElementById("miniTotal");
     const couponInput = document.getElementById("couponInput");
     const couponMsg = document.getElementById("couponMsg");
+
+    // Inputs cliente
+    const inputName  = document.getElementById('custName');
+    const inputPhone = document.getElementById('custPhone');
+    const inputEmail = document.getElementById('custEmail');
+    const inputDob   = document.getElementById('custDob');
+    const custMsg    = document.getElementById('custMsg');
+
+    function fillCustomerUI(){
+      inputName.value  = customer.name  || '';
+      inputPhone.value = customer.phone || '';
+      inputEmail.value = customer.email || '';
+      inputDob.value   = customer.dob   || '';
+    }
+
+    function setFieldError(el, hasError){
+      el.classList.toggle('error-ring', !!hasError);
+    }
+
+    function normalizePhone(p){
+      // Mantiene solo dígitos
+      return (p || '').replace(/\D+/g,'');
+    }
+
+    function validateEmail(e){
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e || '');
+    }
+
+    function validateCustomer(){
+      // Leer valores actuales
+      customer.name  = (inputName.value || '').trim();
+      customer.phone = normalizePhone(inputPhone.value);
+      customer.email = (inputEmail.value || '').trim();
+      customer.dob   = (inputDob.value || '').trim();
+
+      const err = {
+        name:  customer.name.length < 3,
+        phone: customer.phone.length < 9, // Perú 9 dígitos locales, o 11 con 51
+        email: !validateEmail(customer.email),
+        dob:   !customer.dob
+      };
+
+      setFieldError(inputName,  err.name);
+      setFieldError(inputPhone, err.phone);
+      setFieldError(inputEmail, err.email);
+      setFieldError(inputDob,   err.dob);
+
+      const ok = !err.name && !err.phone && !err.email && !err.dob;
+      custMsg.textContent = ok ? "Datos listos ✅" : "Por favor, completa o corrige los campos marcados.";
+      custMsg.className = "text-xs mt-2 " + (ok ? "text-emerald-400" : "text-red-400");
+
+      if (ok) persist();
+      return ok;
+    }
+
+    function formatDOB(iso){
+      // yyyy-mm-dd -> dd/mm/yyyy
+      if(!iso) return "";
+      const [y,m,d] = iso.split("-");
+      return `${d}/${m}/${y}`;
+    }
 
     function updateCartUI() {
       if (cart.length === 0) {
@@ -283,6 +360,11 @@
       couponInput.value = couponApplied ? "RT2025" : "";
       couponMsg.className = "text-sm mt-2 " + (couponApplied ? "text-emerald-400" : "text-neutral-400");
       couponMsg.textContent = couponApplied ? "Cupón RT2025 aplicado (-10%)." : "Ingresa tu cupón si tienes uno.";
+
+      // Cargar datos guardados al abrir/actualizar UI
+      fillCustomerUI();
+      custMsg.textContent = "Usaremos estos datos para tu compra y validación de entradas.";
+      custMsg.className = "text-xs mt-2 text-neutral-400";
     }
 
     // === Cupón ===
@@ -302,26 +384,40 @@
       }
     }
 
-    // === WhatsApp Pay ===
+    // === WhatsApp Pay (incluye datos del cliente) ===
     function payByWhatsApp() {
       if (cart.length === 0) {
         alert("Tu carrito está vacío.");
         return;
       }
+      // Validar datos obligatorios
+      if (!validateCustomer()) {
+        openCart();
+        return;
+      }
+
       const { subtotal, discount, total } = totals();
       const lines = [];
       lines.push("Hola Round Trip 👋 Quiero comprar entradas:");
       lines.push("");
+
+      // Resumen de ítems
       cart.forEach(i => {
         lines.push(`• ${i.title} — ${i.type} x ${i.qty} => ${PEN(i.unitPrice * i.qty)}`);
       });
+
       lines.push("");
       lines.push(`Subtotal: ${PEN(subtotal)}`);
       if (couponApplied) lines.push(`Descuento RT2025 (10%): -${PEN(discount)}`);
       lines.push(`Total a pagar: ${PEN(total)}`);
       lines.push("");
-      lines.push("Nombre:");
-      lines.push("Correo:");
+
+      // Datos del comprador
+      lines.push("Datos del comprador:");
+      lines.push(`• Nombre: ${customer.name}`);
+      lines.push(`• WhatsApp: ${customer.phone}`);
+      lines.push(`• Correo: ${customer.email}`);
+      lines.push(`• Fecha de nacimiento: ${formatDOB(customer.dob)}`);
       lines.push("");
       lines.push("¿Cómo puedo realizar el pago?");
 
@@ -348,6 +444,19 @@
     btnCloseCart.addEventListener("click", closeCart);
     backdrop.addEventListener("click", closeCart);
 
+    // Guardar datos a medida que escribe
+    [inputName, inputPhone, inputEmail, inputDob].forEach(el=>{
+      el.addEventListener('input', ()=>{
+        customer = {
+          name:  (inputName.value || '').trim(),
+          phone: normalizePhone(inputPhone.value),
+          email: (inputEmail.value || '').trim(),
+          dob:   (inputDob.value || '').trim(),
+        };
+        persist();
+      });
+    });
+
     // Buscar
     document.getElementById("search").addEventListener("input", (e) => {
       const q = e.target.value.toLowerCase().trim();
@@ -365,7 +474,3 @@
   </script>
 </body>
 </html>
-
-
-
-
